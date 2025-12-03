@@ -12,18 +12,23 @@ import models, schemas, utils, database
 
 models.Base.metadata.create_all(bind=database.engine)
 
-app = FastAPI(title="Jami Tender Backend")
+app = FastAPI(title="Ez Bid Auth Backend")
 
 # ============================================================
 # CORS CONFIGURATION
 # ============================================================
 origins = [
-    "http://localhost",
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://127.0.0.1:8000",
-    "http://localhost:5174",
-    "https://ez-bid-auth-python.ezbid.cloud"
+  "https://ezbid.vercel.app",
+  "https://ez-bid-client.vercel.app",
+  "https://ezbid.pages.dev",
+  "https://ezbidgo.pages.dev",
+  "https://ezbidgoadmin.pages.dev",
+  "https://api.ezbid.cloud",
+  "https://ezbid.cloud",
+  "https://admin-panel.ezbid.cloud",
+  "http://localhost:5174",
+  "http://localhost:5173",
+  "http://localhost:5000",
 ]
 
 app.add_middleware(

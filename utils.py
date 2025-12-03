@@ -54,7 +54,7 @@ def send_email_otp(email_to: str, otp: str, user_name: str = "User"):
 
         msg = MIMEMultipart("alternative")
         msg["Subject"] = "Your Verification Code"
-        msg["From"] = f"Jami Tender <{sender_email}>"
+        msg["From"] = f" Ez Bid <{sender_email}>"
         msg["To"] = email_to
 
         html_content = f"""
@@ -80,7 +80,7 @@ def send_email_otp(email_to: str, otp: str, user_name: str = "User"):
 def send_sms_otp(phone: str, otp: str):
     try:
         formatted_phone = format_phone_bd(phone)
-        message = f"Your verification code: {otp}. Valid for 10 minutes."
+        message = f"Your Ez Bid verification code: {otp}. Valid for 10 minutes."
         
         url = os.getenv("SMS_API_URL")
         data = {
