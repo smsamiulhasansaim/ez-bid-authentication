@@ -6,10 +6,10 @@ from datetime import datetime, timedelta
 import random
 from typing import List
 
-# আপনার মডিউল ইমপোর্ট
+
 import models, schemas, utils, database
 
-# ডাটাবেজ টেবিল ইনিশিলাইজেশন
+
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="Jami Tender Backend")
@@ -22,7 +22,8 @@ origins = [
     "http://localhost:3000",
     "http://localhost:5173",
     "http://127.0.0.1:8000",
-    "http://localhost:5174"
+    "http://localhost:5174",
+    "https://ez-bid-auth-python.ezbid.cloud"
 ]
 
 app.add_middleware(
@@ -51,7 +52,7 @@ def log_activity(db: Session, action: str, details: str = None, user_id: int = N
         db.add(new_log)
         db.commit()
     except Exception:
-        # লগিং ফেইল করলে মেইন প্রসেস যেন না থামে
+
         pass
 
 # ============================================================
@@ -71,7 +72,7 @@ def register(request: schemas.RegisterRequest, req: Request, background_tasks: B
     if len(request.password.encode('utf-8')) > 72:
         return {"success": False, "message": "Password is too long (max 72 characters)"}
 
-    # ১. ইউজার আগে থেকেই আছে কিনা চেক
+    
     existing_user = db.query(models.User).filter(
         models.User.email == request.email,
         models.User.phone == request.phone
@@ -80,12 +81,11 @@ def register(request: schemas.RegisterRequest, req: Request, background_tasks: B
     user_id = None
 
     if existing_user:
-        # কোম্পানি লিমিট চেক
+        
         company_count = db.query(models.Company).filter(models.Company.user_id == existing_user.id).count()
         if company_count >= 10:
             return {"success": False, "message": "Maximum limit of 10 companies per user reached"}
 
-        # ডুপ্লিকেট কোম্পানি চেক
         duplicate_company = db.query(models.Company).filter(
             models.Company.user_id == existing_user.id,
             models.Company.company_name == request.company
@@ -95,7 +95,7 @@ def register(request: schemas.RegisterRequest, req: Request, background_tasks: B
 
         user_id = existing_user.id
     else:
-        # ক্রস চেক (ইমেইল বা ফোন অন্য কারো সাথে মিলছে কিনা)
+       
         cross_check = db.query(models.User).filter(
             or_(models.User.email == request.email, models.User.phone == request.phone)
         ).first()
@@ -103,7 +103,7 @@ def register(request: schemas.RegisterRequest, req: Request, background_tasks: B
         if cross_check:
             return {"success": False, "message": "Email or phone already registered with different account"}
 
-        # নতুন ইউজার তৈরি
+       
         new_user = models.User(
             full_name=request.full_name,
             email=request.email,
@@ -119,7 +119,7 @@ def register(request: schemas.RegisterRequest, req: Request, background_tasks: B
         # Log Registration
         log_activity(db, "REGISTER", "New user registration", user_id, None, req.client.host)
 
-    # কোম্পানি তৈরি
+    
     new_company = models.Company(
         user_id=user_id,
         company_name=request.company,
@@ -137,11 +137,10 @@ def register(request: schemas.RegisterRequest, req: Request, background_tasks: B
 @app.post("/api/login")
 def login(request: schemas.LoginRequest, req: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     
-    # [FIX] Bcrypt crash prevention
     if len(request.password.encode('utf-8')) > 72:
         return {"success": False, "message": "Password is too long (max 72 characters)"}
 
-    # ইউজার ভেরিফিকেশন
+    
     user = db.query(models.User).filter(
         or_(models.User.email == request.identifier, models.User.phone == request.identifier)
     ).first()
@@ -149,19 +148,17 @@ def login(request: schemas.LoginRequest, req: Request, background_tasks: Backgro
     if not user or not utils.verify_password(request.password, user.password_hash):
         return {"success": False, "message": "No account found or invalid password"}
 
-    # একাউন্ট স্ট্যাটাস চেক
     if user.status != models.UserStatus.active:
         log_activity(db, "LOGIN_DENIED", f"Status: {user.status}", user.id, None, req.client.host)
         return {"success": False, "message": f"Your account is {user.status.value}. Please contact support."}
 
-    # কোম্পানি চেক
+    
     companies = db.query(models.Company).filter(models.Company.user_id == user.id).all()
     if not companies:
         return {"success": False, "message": "No company account found"}
 
     company_list = [{"id": c.id, "company_name": c.company_name} for c in companies]
 
-    # একক কোম্পানি হলে সরাসরি OTP
     if len(companies) == 1:
         otp_code = str(random.randint(100000, 999999))
         otp_entry = models.OTPCode(
@@ -189,7 +186,7 @@ def login(request: schemas.LoginRequest, req: Request, background_tasks: Backgro
             "company_id": companies[0].id
         }
 
-    # একাধিক কোম্পানি রেসপন্স
+    
     return {
         "success": True,
         "message": "Multiple accounts found",
