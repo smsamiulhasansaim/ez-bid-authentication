@@ -1,10 +1,11 @@
-
 services:
   backend:
     build: .
-    container_name: ezbid_backend
+    # container_name removed to prevent conflicts
     ports:
-      - "8000:8000"
+      # Usage: "HOST_PORT:CONTAINER_PORT"
+      # Defaults to 8000 on host if not set in .env
+      - "${APP_PORT:-8000}:8000"
     env_file:
       - .env
     volumes:
@@ -17,7 +18,7 @@ services:
 
   db:
     image: mysql:8.0
-    container_name: ezbid_ez-bid-auth-db
+    # container_name removed
     restart: always
     environment:
       MYSQL_DATABASE: ${DB_NAME}
@@ -25,7 +26,8 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     ports:
-      - "3307:3306"
+      # Defaults to 3307 on host to avoid conflict with local MySQL (usually 3306)
+      - "${DB_HOST_PORT:-3307}:3306"
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
@@ -36,14 +38,15 @@ services:
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
-    container_name: ezbid_phpmyadmin
+    # container_name removed
     restart: always
     environment:
-      PMA_HOST: db         
+      PMA_HOST: db
       PMA_PORT: 3306
       UPLOAD_LIMIT: 64M
     ports:
-      - "8080:80"       
+      # Defaults to 8080 on host
+      - "${PMA_PORT:-8080}:80"
     depends_on:
       - db
 
