@@ -1,10 +1,9 @@
+version: '3.8'
+
 services:
   backend:
     build: .
-    # container_name removed to prevent conflicts
     ports:
-      # Usage: "HOST_PORT:CONTAINER_PORT"
-      # Change BACKEND_PORT in .env to resolve conflicts
       - "${BACKEND_PORT:-8000}:8000"
     env_file:
       - .env
@@ -12,13 +11,13 @@ services:
       - .:/code
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     restart: always
+
     depends_on:
       db:
         condition: service_healthy
 
   db:
     image: mysql:8.0
-    # container_name removed to prevent conflicts
     restart: always
     environment:
       MYSQL_DATABASE: ${DB_NAME}
@@ -26,7 +25,6 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     ports:
-      # Change DB_HOST_PORT in .env to resolve conflicts
       - "${DB_HOST_PORT:-3307}:3306"
     volumes:
       - db_data:/var/lib/mysql
@@ -35,17 +33,16 @@ services:
       interval: 5s
       timeout: 10s
       retries: 10
+      start_period: 10s
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
-    # container_name removed to prevent conflicts
     restart: always
     environment:
-      PMA_HOST: db         
+      PMA_HOST: db
       PMA_PORT: 3306
       UPLOAD_LIMIT: 64M
     ports:
-      # Change PMA_PORT in .env to resolve conflicts
       - "${PMA_PORT:-8080}:80"
     depends_on:
       - db
