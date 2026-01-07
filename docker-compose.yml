@@ -9,7 +9,7 @@ services:
       - .env
     volumes:
       - .:/code
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --proxy-headers --forwarded-allow-ips '*'
     restart: always
 
     depends_on:
