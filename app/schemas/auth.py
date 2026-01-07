@@ -33,6 +33,7 @@ class ForgotPasswordRequest(BaseModel):
 class UserStatusUpdate(BaseModel):
     status: str
 
+# Activity & Company schemas needed for User Response
 class ActivityLogResponse(BaseModel):
     id: int
     action: str
@@ -40,7 +41,6 @@ class ActivityLogResponse(BaseModel):
     ip_address: Optional[str] = None
     created_at: datetime
     target_user_id: Optional[int] = None
-
     class Config:
         from_attributes = True
 
@@ -50,7 +50,6 @@ class CompanyResponse(BaseModel):
     company_email: str
     company_phone: str
     created_at: Optional[datetime] = None
-
     class Config:
         from_attributes = True
 
@@ -63,6 +62,5 @@ class UserResponse(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     companies: List[CompanyResponse] = []
-
     class Config:
         from_attributes = True
