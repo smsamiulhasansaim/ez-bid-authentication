@@ -21,26 +21,30 @@ services:
     container_name: ezbid_ez-bid-auth-db
     restart: always
     environment:
-      MYSQL_DATABASE: ezbiddb
-      MYSQL_USER: ezbid
-      MYSQL_PASSWORD: Safwan@2017
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     ports:
       - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
-    
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u${DB_USER}", "-p${DB_PASSWORD}"]
       interval: 5s
       timeout: 10s
       retries: 10
 
-  adminer:
-    image: adminer
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: ezbid_phpmyadmin
     restart: always
+    environment:
+      PMA_HOST: db         
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 64M
     ports:
-      - "8080:8080"
+      - "8080:80"       
     depends_on:
       - db
 
